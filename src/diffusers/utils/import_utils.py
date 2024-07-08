@@ -334,6 +334,13 @@ except NameError:
 
 _is_google_colab = "google.colab" in sys.modules
 
+_coremltools_available = importlib.util.find_spec("coremltools") is not None
+try:
+    _coremltools_version = importlib_metadata.version("coremltools")
+    logger.debug(f"Successfully imported coremltools version {_coremltools_version}")
+except importlib_metadata.PackageNotFoundError:
+    _coremltools_available = False
+
 
 def is_torch_available():
     return _torch_available
@@ -449,6 +456,10 @@ def is_notebook():
 
 def is_google_colab():
     return _is_google_colab
+
+
+def is_coremltools_available():
+    return _coremltools_available
 
 
 # docstyle-ignore
@@ -573,6 +584,11 @@ BITSANDBYTES_IMPORT_ERROR = """
 {0} requires the bitsandbytes library but it was not found in your environment. You can install it with pip: `pip install bitsandbytes`
 """
 
+# docstyle-ignore
+COREMLTOOLS_IMPORT_ERROR = """
+{0} requires the coremltools library but it was not found in your environment. You can install it with pip: `pip install coremltools`
+"""
+
 BACKENDS_MAPPING = OrderedDict(
     [
         ("bs4", (is_bs4_available, BS4_IMPORT_ERROR)),
@@ -596,6 +612,7 @@ BACKENDS_MAPPING = OrderedDict(
         ("peft", (is_peft_available, PEFT_IMPORT_ERROR)),
         ("safetensors", (is_safetensors_available, SAFETENSORS_IMPORT_ERROR)),
         ("bitsandbytes", (is_bitsandbytes_available, BITSANDBYTES_IMPORT_ERROR)),
+        ("coremltools", (is_coremltools_available, COREMLTOOLS_IMPORT_ERROR)),
     ]
 )
 

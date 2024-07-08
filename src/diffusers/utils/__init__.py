@@ -34,6 +34,8 @@ from .constants import (
     USE_PEFT_BACKEND,
     WEIGHTS_INDEX_NAME,
     WEIGHTS_NAME,
+    COREML_COMPILED_NAME,
+    COREML_COMPILED_FILE_EXTENSION
 )
 from .deprecation_utils import deprecate
 from .doc_utils import replace_example_docstring
@@ -92,6 +94,7 @@ from .import_utils import (
     is_unidecode_available,
     is_wandb_available,
     is_xformers_available,
+    is_coremltools_available,
     requires_backends,
 )
 from .loading_utils import load_image

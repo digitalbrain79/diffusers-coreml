@@ -15,6 +15,7 @@ from .utils import (
     is_torch_available,
     is_torchsde_available,
     is_transformers_available,
+    is_coremltools_available,
 )
 
 

@@ -24,15 +24,18 @@ from typing import List, Optional, Union
 import safetensors
 import torch
 from huggingface_hub.utils import EntryNotFoundError
+import coremltools as ct
 
 from ..utils import (
     SAFE_WEIGHTS_INDEX_NAME,
     SAFETENSORS_FILE_EXTENSION,
+    COREML_COMPILED_FILE_EXTENSION,
     WEIGHTS_INDEX_NAME,
     _add_variant,
     _get_model_file,
     is_accelerate_available,
     is_torch_version,
+    is_coremltools_available,
     logging,
 )
 
@@ -103,6 +106,8 @@ def load_state_dict(checkpoint_file: Union[str, os.PathLike], variant: Optional[
         file_extension = os.path.basename(checkpoint_file).split(".")[-1]
         if file_extension == SAFETENSORS_FILE_EXTENSION:
             return safetensors.torch.load_file(checkpoint_file, device="cpu")
+        elif file_extension == COREML_COMPILED_FILE_EXTENSION:
+            return ct.models.CompiledMLModel(checkpoint_file, ct.ComputeUnit.CPU_AND_GPU)
         else:
             weights_only_kwarg = {"weights_only": True} if is_torch_version(">=", "1.13") else {}
             return torch.load(
@@ -163,6 +168,10 @@ def load_model_dict_into_meta(
 
 
 def _load_state_dict_into_model(model_to_load, state_dict: OrderedDict) -> List[str]:
+    if is_coremltools_available():
+        model_to_load._state_dict = state_dict
+        return ""
+
     # Convert old format to new format if needed from a PyTorch state_dict
     # copy state_dict so _load_from_state_dict can modify it
     state_dict = state_dict.copy()

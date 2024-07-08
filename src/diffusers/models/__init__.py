@@ -19,6 +19,7 @@ from ..utils import (
     _LazyModule,
     is_flax_available,
     is_torch_available,
+    is_coremltools_available,
 )
 
 

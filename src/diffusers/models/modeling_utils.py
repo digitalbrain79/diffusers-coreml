@@ -38,12 +38,15 @@ from ..utils import (
     SAFETENSORS_WEIGHTS_NAME,
     WEIGHTS_INDEX_NAME,
     WEIGHTS_NAME,
+    COREML_COMPILED_NAME,
+    COREML_COMPILED_FILE_EXTENSION,
     _add_variant,
     _get_checkpoint_shard_files,
     _get_model_file,
     deprecate,
     is_accelerate_available,
     is_torch_version,
+    is_coremltools_available,
     logging,
 )
 from ..utils.hub_utils import (
@@ -128,6 +131,9 @@ class ModelMixin(torch.nn.Module, PushToHubMixin):
     _supports_gradient_checkpointing = False
     _keys_to_ignore_on_load_unexpected = None
     _no_split_modules = None
+    if is_coremltools_available():
+        _state_dict = None
+        _coreml_type = None
 
     def __init__(self):
         super().__init__()
@@ -149,6 +155,12 @@ class ModelMixin(torch.nn.Module, PushToHubMixin):
 
         # call PyTorch's https://pytorch.org/docs/stable/_modules/torch/nn/modules/module.html#Module
         return super().__getattr__(name)
+
+    def state_dict(self):
+        if is_coremltools_available():
+            return self._state_dict
+        else:
+            return super().state_dict()
 
     @property
     def is_gradient_checkpointing(self) -> bool:
@@ -536,7 +548,10 @@ class ModelMixin(torch.nn.Module, PushToHubMixin):
 
         allow_pickle = False
         if use_safetensors is None:
-            use_safetensors = True
+            if is_coremltools_available():
+                use_safetensors = False
+            else:
+                use_safetensors = True
             allow_pickle = True
 
         if low_cpu_mem_usage and not is_accelerate_available():
@@ -721,7 +736,7 @@ class ModelMixin(torch.nn.Module, PushToHubMixin):
             if model_file is None and not is_sharded:
                 model_file = _get_model_file(
                     pretrained_model_name_or_path,
-                    weights_name=_add_variant(WEIGHTS_NAME, variant),
+                    weights_name=_add_variant(COREML_COMPILED_NAME, variant),
                     cache_dir=cache_dir,
                     force_download=force_download,
                     resume_download=resume_download,
@@ -743,33 +758,35 @@ class ModelMixin(torch.nn.Module, PushToHubMixin):
                 if device_map is None and not is_sharded:
                     param_device = "cpu"
                     state_dict = load_state_dict(model_file, variant=variant)
-                    model._convert_deprecated_attention_blocks(state_dict)
-                    # move the params from meta device to cpu
-                    missing_keys = set(model.state_dict().keys()) - set(state_dict.keys())
-                    if len(missing_keys) > 0:
-                        raise ValueError(
-                            f"Cannot load {cls} from {pretrained_model_name_or_path} because the following keys are"
-                            f" missing: \n {', '.join(missing_keys)}. \n Please make sure to pass"
-                            " `low_cpu_mem_usage=False` and `device_map=None` if you want to randomly initialize"
-                            " those weights or else make sure your checkpoint file is correct."
+
+                    if not model_file.endswith(COREML_COMPILED_FILE_EXTENSION):
+                        model._convert_deprecated_attention_blocks(state_dict)
+                        # move the params from meta device to cpu
+                        missing_keys = set(model.state_dict().keys()) - set(state_dict.keys())
+                        if len(missing_keys) > 0:
+                            raise ValueError(
+                                f"Cannot load {cls} from {pretrained_model_name_or_path} because the following keys are"
+                                f" missing: \n {', '.join(missing_keys)}. \n Please make sure to pass"
+                                " `low_cpu_mem_usage=False` and `device_map=None` if you want to randomly initialize"
+                                " those weights or else make sure your checkpoint file is correct."
+                            )
+
+                        unexpected_keys = load_model_dict_into_meta(
+                            model,
+                            state_dict,
+                            device=param_device,
+                            dtype=torch_dtype,
+                            model_name_or_path=pretrained_model_name_or_path,
                         )
 
-                    unexpected_keys = load_model_dict_into_meta(
-                        model,
-                        state_dict,
-                        device=param_device,
-                        dtype=torch_dtype,
-                        model_name_or_path=pretrained_model_name_or_path,
-                    )
+                        if cls._keys_to_ignore_on_load_unexpected is not None:
+                            for pat in cls._keys_to_ignore_on_load_unexpected:
+                                unexpected_keys = [k for k in unexpected_keys if re.search(pat, k) is None]
 
-                    if cls._keys_to_ignore_on_load_unexpected is not None:
-                        for pat in cls._keys_to_ignore_on_load_unexpected:
-                            unexpected_keys = [k for k in unexpected_keys if re.search(pat, k) is None]
-
-                    if len(unexpected_keys) > 0:
-                        logger.warning(
-                            f"Some weights of the model checkpoint were not used when initializing {cls.__name__}: \n {[', '.join(unexpected_keys)]}"
-                        )
+                        if len(unexpected_keys) > 0:
+                            logger.warning(
+                                f"Some weights of the model checkpoint were not used when initializing {cls.__name__}: \n {[', '.join(unexpected_keys)]}"
+                            )
 
                 else:  # else let accelerate handle loading and dispatching.
                     # Load weights and dispatch according to the device_map
@@ -836,7 +853,10 @@ class ModelMixin(torch.nn.Module, PushToHubMixin):
                 model = cls.from_config(config, **unused_kwargs)
 
                 state_dict = load_state_dict(model_file, variant=variant)
-                model._convert_deprecated_attention_blocks(state_dict)
+                if model_file.endswith(COREML_COMPILED_FILE_EXTENSION):
+                    model._coreml_type = "compiled"
+                else:
+                    model._convert_deprecated_attention_blocks(state_dict)
 
                 model, missing_keys, unexpected_keys, mismatched_keys, error_msgs = cls._load_pretrained_model(
                     model,
@@ -864,6 +884,7 @@ class ModelMixin(torch.nn.Module, PushToHubMixin):
 
         # Set model in evaluation mode to deactivate DropOut modules by default
         model.eval()
+
         if output_loading_info:
             return model, loading_info
 
@@ -880,9 +901,12 @@ class ModelMixin(torch.nn.Module, PushToHubMixin):
     ):
         # Retrieve missing & unexpected_keys
         model_state_dict = model.state_dict()
-        loaded_keys = list(state_dict.keys())
-
-        expected_keys = list(model_state_dict.keys())
+        if is_coremltools_available():
+            loaded_keys = []
+            expected_keys = []
+        else:
+            loaded_keys = list(state_dict.keys())
+            expected_keys = list(model_state_dict.keys())
 
         original_loaded_keys = loaded_keys
 

@@ -301,6 +301,10 @@ def _get_model_file(
             # Load from a PyTorch checkpoint
             model_file = os.path.join(pretrained_model_name_or_path, weights_name)
             return model_file
+        elif os.path.isdir(os.path.join(pretrained_model_name_or_path, weights_name)):
+            # Load from a CoreML checkpoint
+            model_file = os.path.join(pretrained_model_name_or_path, weights_name)
+            return model_file
         elif subfolder is not None and os.path.isfile(
             os.path.join(pretrained_model_name_or_path, subfolder, weights_name)
         ):
