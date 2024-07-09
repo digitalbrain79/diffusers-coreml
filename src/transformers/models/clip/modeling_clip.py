@@ -1194,7 +1194,6 @@ class CLIPTextModelWithProjection(CLIPPreTrainedModel):
 
     def __init__(self, config: CLIPTextConfig):
         super().__init__(config)
-
         self.text_model = CLIPTextTransformer(config)
 
         self.text_projection = nn.Linear(config.hidden_size, config.projection_dim, bias=False)
@@ -1236,6 +1235,20 @@ class CLIPTextModelWithProjection(CLIPPreTrainedModel):
         >>> text_embeds = outputs.text_embeds
         ```"""
         return_dict = return_dict if return_dict is not None else self.config.use_return_dict
+
+        if hasattr(self, "_coreml_type"):
+            if self._coreml_type == "compiled":
+                kwargs = {"input_ids": input_ids.numpy().astype(np.float32)}
+
+                hidden_embeds = torch.FloatTensor(self._state_dict.predict(kwargs)["hidden_embeds"])
+                pooled_outputs = torch.FloatTensor(self._state_dict.predict(kwargs)["pooled_outputs"])
+                if not return_dict:
+                    return (hidden_embeds, pooled_outputs)
+
+                return CLIPTextModelOutput(
+                    hidden_states=(hidden_embeds,),
+                    text_embeds=pooled_outputs
+                )
 
         text_outputs = self.text_model(
             input_ids=input_ids,

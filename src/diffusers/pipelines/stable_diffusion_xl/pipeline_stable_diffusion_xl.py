@@ -811,6 +811,9 @@ class StableDiffusionXLPipeline(
     # corresponds to doing no classifier free guidance.
     @property
     def do_classifier_free_guidance(self):
+        if hasattr(self.unet, "_coreml_type"):
+            if self.unet._coreml_type == "compiled":
+                return True
         return self._guidance_scale > 1 and self.unet.config.time_cond_proj_dim is None
 
     @property

@@ -15,6 +15,7 @@ from typing import Dict, Optional, Tuple, Union
 
 import torch
 import torch.nn as nn
+import numpy as np
 
 from ...configuration_utils import ConfigMixin, register_to_config
 from ...loaders.single_file_model import FromOriginalModelMixin
@@ -307,6 +308,16 @@ class AutoencoderKL(ModelMixin, ConfigMixin, FromOriginalModelMixin):
                 returned.
 
         """
+        if hasattr(self, "_coreml_type"):
+            if self._coreml_type == "compiled":
+                kwargs = {"z": z.numpy()}
+
+                decoded = torch.from_numpy(self._state_dict.predict(kwargs)["image"])
+                if not return_dict:
+                    return (decoded,)
+
+                return DecoderOutput(sample=decoded)
+
         if self.use_slicing and z.shape[0] > 1:
             decoded_slices = [self._decode(z_slice).sample for z_slice in z.split(1)]
             decoded = torch.cat(decoded_slices)
