@@ -91,31 +91,32 @@ class AutoencoderKL(ModelMixin, ConfigMixin, FromOriginalModelMixin):
     ):
         super().__init__()
 
-        # pass init params to Encoder
-        self.encoder = Encoder(
-            in_channels=in_channels,
-            out_channels=latent_channels,
-            down_block_types=down_block_types,
-            block_out_channels=block_out_channels,
-            layers_per_block=layers_per_block,
-            act_fn=act_fn,
-            norm_num_groups=norm_num_groups,
-            double_z=True,
-        )
+        if not hasattr(self, "_coreml_type"):
+            # pass init params to Encoder
+            self.encoder = Encoder(
+                in_channels=in_channels,
+                out_channels=latent_channels,
+                down_block_types=down_block_types,
+                block_out_channels=block_out_channels,
+                layers_per_block=layers_per_block,
+                act_fn=act_fn,
+                norm_num_groups=norm_num_groups,
+                double_z=True,
+            )
 
-        # pass init params to Decoder
-        self.decoder = Decoder(
-            in_channels=latent_channels,
-            out_channels=out_channels,
-            up_block_types=up_block_types,
-            block_out_channels=block_out_channels,
-            layers_per_block=layers_per_block,
-            norm_num_groups=norm_num_groups,
-            act_fn=act_fn,
-        )
+            # pass init params to Decoder
+            self.decoder = Decoder(
+                in_channels=latent_channels,
+                out_channels=out_channels,
+                up_block_types=up_block_types,
+                block_out_channels=block_out_channels,
+                layers_per_block=layers_per_block,
+                norm_num_groups=norm_num_groups,
+                act_fn=act_fn,
+            )
 
-        self.quant_conv = nn.Conv2d(2 * latent_channels, 2 * latent_channels, 1) if use_quant_conv else None
-        self.post_quant_conv = nn.Conv2d(latent_channels, latent_channels, 1) if use_post_quant_conv else None
+            self.quant_conv = nn.Conv2d(2 * latent_channels, 2 * latent_channels, 1) if use_quant_conv else None
+            self.post_quant_conv = nn.Conv2d(latent_channels, latent_channels, 1) if use_post_quant_conv else None
 
         self.use_slicing = False
         self.use_tiling = False

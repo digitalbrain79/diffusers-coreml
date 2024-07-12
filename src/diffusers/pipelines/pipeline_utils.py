@@ -55,6 +55,7 @@ from ..utils import (
     is_accelerate_version,
     is_torch_npu_available,
     is_torch_version,
+    is_coremltools_available,
     logging,
     numpy_to_pil,
 )
@@ -451,12 +452,13 @@ class DiffusionPipeline(ConfigMixin, PushToHubMixin):
         Returns:
             `torch.device`: The torch device on which the pipeline is located.
         """
-        module_names, _ = self._get_signature_keys(self)
-        modules = [getattr(self, n, None) for n in module_names]
-        modules = [m for m in modules if isinstance(m, torch.nn.Module)]
+        if not is_coremltools_available():
+            module_names, _ = self._get_signature_keys(self)
+            modules = [getattr(self, n, None) for n in module_names]
+            modules = [m for m in modules if isinstance(m, torch.nn.Module)]
 
-        for module in modules:
-            return module.device
+            for module in modules:
+                return module.device
 
         return torch.device("cpu")
 

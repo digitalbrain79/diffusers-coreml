@@ -422,7 +422,10 @@ class StableDiffusionXLImg2ImgPipeline(
                 # We are only ALWAYS interested in the pooled output of the final text encoder
                 pooled_prompt_embeds = prompt_embeds[0]
                 if clip_skip is None:
-                    prompt_embeds = prompt_embeds.hidden_states[-2]
+                    if len(prompt_embeds.hidden_states) == 1:
+                        prompt_embeds = prompt_embeds.hidden_states[0]
+                    else:
+                        prompt_embeds = prompt_embeds.hidden_states[-2]
                 else:
                     # "2" because SDXL always indexes from the penultimate layer.
                     prompt_embeds = prompt_embeds.hidden_states[-(clip_skip + 2)]
