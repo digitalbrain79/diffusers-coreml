@@ -39,7 +39,7 @@ HUGGINGFACE_CO_RESOLVE_ENDPOINT = os.environ.get("HF_ENDPOINT", "https://hugging
 DIFFUSERS_DYNAMIC_MODULE_NAME = "diffusers_modules"
 HF_MODULES_CACHE = os.getenv("HF_MODULES_CACHE", os.path.join(HF_HOME, "modules"))
 DEPRECATED_REVISION_ARGS = ["fp16", "non-ema"]
-COREML_COMPILED_NAME = "model.mlmodelc"
+COREML_COMPILED_WEIGHTS_NAME = "coreml_model.mlmodelc"
 COREML_COMPILED_FILE_EXTENSION = "mlmodelc"
 
 # Below should be `True` if the current version of `peft` and `transformers` are compatible with

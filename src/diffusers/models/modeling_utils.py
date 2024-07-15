@@ -38,7 +38,7 @@ from ..utils import (
     SAFETENSORS_WEIGHTS_NAME,
     WEIGHTS_INDEX_NAME,
     WEIGHTS_NAME,
-    COREML_COMPILED_NAME,
+    COREML_COMPILED_WEIGHTS_NAME,
     COREML_COMPILED_FILE_EXTENSION,
     _add_variant,
     _get_checkpoint_shard_files,
@@ -736,7 +736,7 @@ class ModelMixin(torch.nn.Module, PushToHubMixin):
             if model_file is None and not is_sharded:
                 model_file = _get_model_file(
                     pretrained_model_name_or_path,
-                    weights_name=_add_variant(COREML_COMPILED_NAME, variant),
+                    weights_name=_add_variant(COREML_COMPILED_WEIGHTS_NAME, variant),
                     cache_dir=cache_dir,
                     force_download=force_download,
                     resume_download=resume_download,

@@ -34,7 +34,7 @@ from .constants import (
     USE_PEFT_BACKEND,
     WEIGHTS_INDEX_NAME,
     WEIGHTS_NAME,
-    COREML_COMPILED_NAME,
+    COREML_COMPILED_WEIGHTS_NAME,
     COREML_COMPILED_FILE_EXTENSION
 )
 from .deprecation_utils import deprecate

@@ -54,7 +54,7 @@ from .utils import (
     TF_WEIGHTS_NAME,
     WEIGHTS_INDEX_NAME,
     WEIGHTS_NAME,
-    COREML_COMPILED_NAME,
+    COREML_COMPILED_WEIGHTS_NAME,
     ContextManagers,
     ModelOutput,
     PushToHubMixin,
@@ -2386,11 +2386,11 @@ class PreTrainedModel(nn.Module, ModuleUtilsMixin, GenerationMixin, PushToHubMix
                         pretrained_model_name_or_path, subfolder, _add_variant(WEIGHTS_NAME, variant)
                     )
                 elif os.path.isdir(
-                    os.path.join(pretrained_model_name_or_path, subfolder, COREML_COMPILED_NAME)
+                    os.path.join(pretrained_model_name_or_path, subfolder, COREML_COMPILED_WEIGHTS_NAME)
                 ):
                     # Load from a CoreML checkpoint
                     archive_file = os.path.join(
-                        pretrained_model_name_or_path, subfolder, COREML_COMPILED_NAME
+                        pretrained_model_name_or_path, subfolder, COREML_COMPILED_WEIGHTS_NAME
                     )
                 elif os.path.isfile(
                     os.path.join(pretrained_model_name_or_path, subfolder, _add_variant(WEIGHTS_INDEX_NAME, variant))
@@ -2623,7 +2623,7 @@ class PreTrainedModel(nn.Module, ModuleUtilsMixin, GenerationMixin, PushToHubMix
                 loaded_state_dict_keys = sharded_metadata["all_checkpoint_keys"]
             else:
                 loaded_state_dict_keys = None
-                if not resolved_archive_file.endswith(COREML_COMPILED_NAME):
+                if not resolved_archive_file.endswith(COREML_COMPILED_WEIGHTS_NAME):
                     loaded_state_dict_keys = list(state_dict.keys())
             if low_cpu_mem_usage or use_keep_in_fp32_modules:
                 state_dict = None

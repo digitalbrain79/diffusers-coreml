@@ -236,7 +236,7 @@ class StableDiffusionXLPipeline(
 
     def __init__(
         self,
-        vae: AutoencoderKL,
+        vae_decoder: AutoencoderKL,
         text_encoder: CLIPTextModel,
         text_encoder_2: CLIPTextModelWithProjection,
         tokenizer: CLIPTokenizer,
@@ -251,7 +251,7 @@ class StableDiffusionXLPipeline(
         super().__init__()
 
         self.register_modules(
-            vae=vae,
+            vae_decoder=vae_decoder,
             text_encoder=text_encoder,
             text_encoder_2=text_encoder_2,
             tokenizer=tokenizer,
@@ -262,7 +262,7 @@ class StableDiffusionXLPipeline(
             feature_extractor=feature_extractor,
         )
         self.register_to_config(force_zeros_for_empty_prompt=force_zeros_for_empty_prompt)
-        self.vae_scale_factor = 2 ** (len(self.vae.config.block_out_channels) - 1)
+        self.vae_scale_factor = 2 ** (len(self.vae_decoder.config.block_out_channels) - 1)
         self.image_processor = VaeImageProcessor(vae_scale_factor=self.vae_scale_factor)
 
         self.default_sample_size = self.unet.config.sample_size
@@ -744,10 +744,10 @@ class StableDiffusionXLPipeline(
         return add_time_ids
 
     def upcast_vae(self):
-        dtype = self.vae.dtype
-        self.vae.to(dtype=torch.float32)
+        dtype = self.vae_decoder.dtype
+        self.vae_decoder.to(dtype=torch.float32)
         use_torch_2_0_or_xformers = isinstance(
-            self.vae.decoder.mid_block.attentions[0].processor,
+            self.vae_decoder.decoder.mid_block.attentions[0].processor,
             (
                 AttnProcessor2_0,
                 XFormersAttnProcessor,
@@ -759,9 +759,9 @@ class StableDiffusionXLPipeline(
         # if xformers or torch_2_0 is used attention block does not need
         # to be in float32 which can save lots of memory
         if use_torch_2_0_or_xformers:
-            self.vae.post_quant_conv.to(dtype)
-            self.vae.decoder.conv_in.to(dtype)
-            self.vae.decoder.mid_block.to(dtype)
+            self.vae_decoder.post_quant_conv.to(dtype)
+            self.vae_decoder.decoder.conv_in.to(dtype)
+            self.vae_decoder.decoder.mid_block.to(dtype)
 
     # Copied from diffusers.pipelines.latent_consistency_models.pipeline_latent_consistency_text2img.LatentConsistencyModelPipeline.get_guidance_scale_embedding
     def get_guidance_scale_embedding(
@@ -1264,36 +1264,36 @@ class StableDiffusionXLPipeline(
 
         if not output_type == "latent":
             # make sure the VAE is in float32 mode, as it overflows in float16
-            needs_upcasting = self.vae.dtype == torch.float16 and self.vae.config.force_upcast
+            needs_upcasting = self.vae_decoder.dtype == torch.float16 and self.vae_decoder.config.force_upcast
 
             if needs_upcasting:
                 self.upcast_vae()
-                latents = latents.to(next(iter(self.vae.post_quant_conv.parameters())).dtype)
-            elif latents.dtype != self.vae.dtype:
+                latents = latents.to(next(iter(self.vae_decoder.post_quant_conv.parameters())).dtype)
+            elif latents.dtype != self.vae_decoder.dtype:
                 if torch.backends.mps.is_available():
                     # some platforms (eg. apple mps) misbehave due to a pytorch bug: https://github.com/pytorch/pytorch/pull/99272
-                    self.vae = self.vae.to(latents.dtype)
+                    self.vae = self.vae_decoder.to(latents.dtype)
 
             # unscale/denormalize the latents
             # denormalize with the mean and std if available and not None
-            has_latents_mean = hasattr(self.vae.config, "latents_mean") and self.vae.config.latents_mean is not None
-            has_latents_std = hasattr(self.vae.config, "latents_std") and self.vae.config.latents_std is not None
+            has_latents_mean = hasattr(self.vae_decoder.config, "latents_mean") and self.vae_decoder.config.latents_mean is not None
+            has_latents_std = hasattr(self.vae_decoder.config, "latents_std") and self.vae_decoder.config.latents_std is not None
             if has_latents_mean and has_latents_std:
                 latents_mean = (
-                    torch.tensor(self.vae.config.latents_mean).view(1, 4, 1, 1).to(latents.device, latents.dtype)
+                    torch.tensor(self.vae_decoder.config.latents_mean).view(1, 4, 1, 1).to(latents.device, latents.dtype)
                 )
                 latents_std = (
-                    torch.tensor(self.vae.config.latents_std).view(1, 4, 1, 1).to(latents.device, latents.dtype)
+                    torch.tensor(self.vae_decoder.config.latents_std).view(1, 4, 1, 1).to(latents.device, latents.dtype)
                 )
-                latents = latents * latents_std / self.vae.config.scaling_factor + latents_mean
+                latents = latents * latents_std / self.vae_decoder.config.scaling_factor + latents_mean
             else:
-                latents = latents / self.vae.config.scaling_factor
+                latents = latents / self.vae_decoder.config.scaling_factor
 
-            image = self.vae.decode(latents, return_dict=False)[0]
+            image = self.vae_decoder.decode(latents, return_dict=False)[0]
 
             # cast back to fp16 if needed
             if needs_upcasting:
-                self.vae.to(dtype=torch.float16)
+                self.vae_decoder.to(dtype=torch.float16)
         else:
             image = latents
 
