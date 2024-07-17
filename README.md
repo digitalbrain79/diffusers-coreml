@@ -12,6 +12,16 @@
 |:------------------------:|:------------:|:------------:|:----------:|
 | [SDXL Lightning 4step](https://huggingface.co/ByteDance/SDXL-Lightning) |    6bits     | CPU_AND_GPU  |     15     |
 
+## Supported Pipelines
+
+- StableDiffusionXLPipeline
+- StableDiffusionXLImg2ImgPipeline
+
+## Not Supported
+
+- LoRA
+- ControlNet
+
 ## Installation
 
 ```
