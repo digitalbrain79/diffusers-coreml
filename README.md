@@ -8,9 +8,9 @@
 
 ## Performance
 
-|        Model         | Quantization | Compute Unit | Latency(s) |
-|:--------------------:|:------------:|:------------:|:----------:|
-| SDXL Lightning 4step |    6bits     | CPU_AND_GPU  |     15     |
+|          Model           | Quantization | Compute Unit | Latency(s) |
+|:------------------------:|:------------:|:------------:|:----------:|
+| [SDXL Lightning 4step](https://huggingface.co/ByteDance/SDXL-Lightning) |    6bits     | CPU_AND_GPU  |     15     |
 
 ## Installation
 
