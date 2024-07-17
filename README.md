@@ -47,7 +47,7 @@ image = pipeline(
 
 <img src="assets/text_to_image.png" width="384">
 
-### Text to Image
+### Image to Image
 
 ```py
 from diffusers import (
