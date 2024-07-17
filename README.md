@@ -2,9 +2,9 @@
 
 ## Tested on
 
-|      Device       | macOS  | Python | coremltools |
-|:-----------------:|:------:|:------:|:-----------:|
-| MacBook 15 M3 16G |   14.5 |  3.9   |     7.2     |
+|       Device       | macOS  | Python | coremltools |
+|:------------------:|:------:|:------:|:-----------:|
+| MacBook Air M3 16G |   14.5 |  3.9   |     7.2     |
 
 ## Performance
 
