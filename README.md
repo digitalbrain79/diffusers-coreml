@@ -16,6 +16,7 @@
 
 - StableDiffusionXLPipeline
 - StableDiffusionXLImg2ImgPipeline
+- StableDiffusionXLInpaintPipeline
 
 ## Not Supported
 
