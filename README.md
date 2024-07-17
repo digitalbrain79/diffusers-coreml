@@ -88,3 +88,40 @@ image = pipeline(
 ```
 
 <img src="assets/image_to_image.png" width="384">
+
+### Inpainting
+
+```py
+from diffusers import (
+    EulerAncestralDiscreteScheduler,
+    StableDiffusionXLInpaintPipeline
+)
+from diffusers.utils import load_image
+
+pipeline = StableDiffusionXLInpaintPipeline.from_pretrained(
+    "digitalbrain79/sdxl_lightning_4step_coreml_6bits_compiled",
+    use_safetensors=False,
+    low_cpu_mem_usage=False
+)
+
+pipeline.scheduler = EulerAncestralDiscreteScheduler.from_config(
+    pipeline.scheduler.config, timestep_spacing="trailing"
+)
+
+img_url = "https://raw.githubusercontent.com/CompVis/latent-diffusion/main/data/inpainting_examples/overture-creations-5sI6fQgYIuo.png"
+mask_url = "https://raw.githubusercontent.com/CompVis/latent-diffusion/main/data/inpainting_examples/overture-creations-5sI6fQgYIuo_mask.png"
+
+init_image = load_image(img_url).convert("RGB")
+mask_image = load_image(mask_url).convert("RGB")
+
+image = pipeline(
+    prompt="A cat sitting on a bench",
+    image=init_image,
+    mask_image=mask_image,
+    strength=0.9,
+    num_inference_steps=4,
+    guidance_scale=0
+).images[0]
+```
+
+<img src="assets/inpainting.png" width="384">
