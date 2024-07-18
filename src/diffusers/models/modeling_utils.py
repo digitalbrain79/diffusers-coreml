@@ -40,6 +40,8 @@ from ..utils import (
     WEIGHTS_NAME,
     COREML_COMPILED_WEIGHTS_NAME,
     COREML_COMPILED_FILE_EXTENSION,
+    COREML_PACKAGES_WEIGHTS_NAME,
+    COREML_PACKAGES_FILE_EXTENSION,
     _add_variant,
     _get_checkpoint_shard_files,
     _get_model_file,
@@ -734,9 +736,14 @@ class ModelMixin(torch.nn.Module, PushToHubMixin):
                     )
 
             if model_file is None and not is_sharded:
+                if os.path.exists(os.path.join(pretrained_model_name_or_path, COREML_PACKAGES_WEIGHTS_NAME)):
+                    weights_name = COREML_PACKAGES_WEIGHTS_NAME
+                else:
+                    weights_name = COREML_COMPILED_WEIGHTS_NAME
+
                 model_file = _get_model_file(
                     pretrained_model_name_or_path,
-                    weights_name=_add_variant(COREML_COMPILED_WEIGHTS_NAME, variant),
+                    weights_name=_add_variant(weights_name, variant),
                     cache_dir=cache_dir,
                     force_download=force_download,
                     resume_download=resume_download,
@@ -759,7 +766,8 @@ class ModelMixin(torch.nn.Module, PushToHubMixin):
                     param_device = "cpu"
                     state_dict = load_state_dict(model_file, variant=variant)
 
-                    if not model_file.endswith(COREML_COMPILED_FILE_EXTENSION):
+                    if not (model_file.endswith(COREML_COMPILED_FILE_EXTENSION) or
+                            model_file.endswith(COREML_PACKAGES_FILE_EXTENSION)):
                         model._convert_deprecated_attention_blocks(state_dict)
                         # move the params from meta device to cpu
                         missing_keys = set(model.state_dict().keys()) - set(state_dict.keys())
@@ -855,6 +863,8 @@ class ModelMixin(torch.nn.Module, PushToHubMixin):
                 state_dict = load_state_dict(model_file, variant=variant)
                 if model_file.endswith(COREML_COMPILED_FILE_EXTENSION):
                     model._coreml_type = "compiled"
+                if model_file.endswith(COREML_PACKAGES_FILE_EXTENSION):
+                    model._coreml_type = "package"
                 else:
                     model._convert_deprecated_attention_blocks(state_dict)
 

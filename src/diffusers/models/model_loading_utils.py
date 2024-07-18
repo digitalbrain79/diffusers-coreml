@@ -30,6 +30,7 @@ from ..utils import (
     SAFE_WEIGHTS_INDEX_NAME,
     SAFETENSORS_FILE_EXTENSION,
     COREML_COMPILED_FILE_EXTENSION,
+    COREML_PACKAGES_FILE_EXTENSION,
     WEIGHTS_INDEX_NAME,
     _add_variant,
     _get_model_file,
@@ -108,6 +109,8 @@ def load_state_dict(checkpoint_file: Union[str, os.PathLike], variant: Optional[
             return safetensors.torch.load_file(checkpoint_file, device="cpu")
         elif file_extension == COREML_COMPILED_FILE_EXTENSION:
             return ct.models.CompiledMLModel(checkpoint_file, ct.ComputeUnit.CPU_AND_GPU)
+        elif file_extension == COREML_PACKAGES_FILE_EXTENSION:
+            return ct.models.MLModel(checkpoint_file, compute_units=ct.ComputeUnit.CPU_AND_GPU)
         else:
             weights_only_kwarg = {"weights_only": True} if is_torch_version(">=", "1.13") else {}
             return torch.load(

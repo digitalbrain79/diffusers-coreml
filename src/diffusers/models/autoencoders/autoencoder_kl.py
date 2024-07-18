@@ -257,9 +257,8 @@ class AutoencoderKL(ModelMixin, ConfigMixin, FromOriginalModelMixin):
                 [`~models.autoencoder_kl.AutoencoderKLOutput`] is returned, otherwise a plain `tuple` is returned.
         """
         if hasattr(self, "_coreml_type"):
-            if self._coreml_type == "compiled":
-                kwargs = {"x": x.numpy()}
-                moments = torch.from_numpy(self._state_dict.predict(kwargs)["latent"])
+            kwargs = {"x": x.numpy()}
+            moments = torch.from_numpy(self._state_dict.predict(kwargs)["latent"])
         else:
             if self.use_tiling and (x.shape[-1] > self.tile_sample_min_size or x.shape[-2] > self.tile_sample_min_size):
                 return self.tiled_encode(x, return_dict=return_dict)
@@ -315,14 +314,13 @@ class AutoencoderKL(ModelMixin, ConfigMixin, FromOriginalModelMixin):
 
         """
         if hasattr(self, "_coreml_type"):
-            if self._coreml_type == "compiled":
-                kwargs = {"z": z.numpy()}
+            kwargs = {"z": z.numpy()}
 
-                decoded = torch.from_numpy(self._state_dict.predict(kwargs)["image"])
-                if not return_dict:
-                    return (decoded,)
+            decoded = torch.from_numpy(self._state_dict.predict(kwargs)["image"])
+            if not return_dict:
+                return (decoded,)
 
-                return DecoderOutput(sample=decoded)
+            return DecoderOutput(sample=decoded)
 
         if self.use_slicing and z.shape[0] > 1:
             decoded_slices = [self._decode(z_slice).sample for z_slice in z.split(1)]

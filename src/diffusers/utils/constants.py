@@ -41,6 +41,8 @@ HF_MODULES_CACHE = os.getenv("HF_MODULES_CACHE", os.path.join(HF_HOME, "modules"
 DEPRECATED_REVISION_ARGS = ["fp16", "non-ema"]
 COREML_COMPILED_WEIGHTS_NAME = "coreml_model.mlmodelc"
 COREML_COMPILED_FILE_EXTENSION = "mlmodelc"
+COREML_PACKAGES_WEIGHTS_NAME = "coreml_model.mlpackage"
+COREML_PACKAGES_FILE_EXTENSION = "mlpackage"
 
 # Below should be `True` if the current version of `peft` and `transformers` are compatible with
 # PEFT backend. Will automatically fall back to PEFT backend if the correct versions of the libraries are

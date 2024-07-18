@@ -1096,21 +1096,20 @@ class UNet2DConditionModel(
         # However, the upsampling interpolation output size can be forced to fit any upsampling size
         # on the fly if necessary.
         if hasattr(self, "_coreml_type"):
-            if self._coreml_type == "compiled":
-                encoder_hidden_states = np.expand_dims(encoder_hidden_states.permute((0, 2, 1)), axis=2)
-                kwargs = {
-                    "sample": sample.numpy(),
-                    "timestep": np.array([timestep.numpy()]),
-                    "encoder_hidden_states": encoder_hidden_states,
-                    "text_embeds": added_cond_kwargs["text_embeds"].numpy(),
-                    "time_ids": added_cond_kwargs["time_ids"].numpy()
-                }
+            encoder_hidden_states = np.expand_dims(encoder_hidden_states.permute((0, 2, 1)), axis=2)
+            kwargs = {
+                "sample": sample.numpy(),
+                "timestep": np.array([timestep.numpy()]),
+                "encoder_hidden_states": encoder_hidden_states,
+                "text_embeds": added_cond_kwargs["text_embeds"].numpy(),
+                "time_ids": added_cond_kwargs["time_ids"].numpy()
+            }
 
-                sample = torch.from_numpy(self._state_dict.predict(kwargs)["noise_pred"])
-                if not return_dict:
-                    return (sample,)
+            sample = torch.from_numpy(self._state_dict.predict(kwargs)["noise_pred"])
+            if not return_dict:
+                return (sample,)
 
-                return UNet2DConditionOutput(sample=sample)
+            return UNet2DConditionOutput(sample=sample)
 
         default_overall_up_factor = 2**self.num_upsamplers
 

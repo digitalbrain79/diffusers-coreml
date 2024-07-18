@@ -35,7 +35,9 @@ from .constants import (
     WEIGHTS_INDEX_NAME,
     WEIGHTS_NAME,
     COREML_COMPILED_WEIGHTS_NAME,
-    COREML_COMPILED_FILE_EXTENSION
+    COREML_COMPILED_FILE_EXTENSION,
+    COREML_PACKAGES_WEIGHTS_NAME,
+    COREML_PACKAGES_FILE_EXTENSION
 )
 from .deprecation_utils import deprecate
 from .doc_utils import replace_example_docstring
