@@ -135,6 +135,7 @@ _deps = [
     "transformers>=4.41.2",
     "urllib3<=2.0.0",
     "black",
+    "coremltools>=7.2"
 ]
 
 # this is a lookup table with items like:
