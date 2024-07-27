@@ -180,3 +180,9 @@ prompt="a photo of an astronaut riding a horse on mars",
 ```
 
 <img src="assets/canny.png" width="384"/> <img src="assets/controlnet_canny.png" width="384"/> 
+
+## References
+
+https://github.com/apple/ml-stable-diffusion<br/>
+https://huggingface.co/ByteDance/SDXL-Lightning<br/>
+https://huggingface.co/TheMistoAI/MistoLine
