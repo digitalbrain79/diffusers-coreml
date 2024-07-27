@@ -17,11 +17,11 @@
 - StableDiffusionXLPipeline
 - StableDiffusionXLImg2ImgPipeline
 - StableDiffusionXLInpaintPipeline
+- StableDiffusionXLControlNetPipeline
 
 ## Not Supported
 
 - LoRA
-- ControlNet
 
 ## Installation
 
