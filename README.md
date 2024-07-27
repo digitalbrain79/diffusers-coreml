@@ -26,8 +26,8 @@
 ## Installation
 
 ```
-pip3 install git+https://github.com/digitalbrain79/transformers_coreml.git
-pip3 install git+https://github.com/digitalbrain79/diffusers_coreml.git
+pip3 install git+https://github.com/digitalbrain79/transformers-coreml.git
+pip3 install git+https://github.com/digitalbrain79/diffusers-coreml.git
 ```
 
 ## Examples
