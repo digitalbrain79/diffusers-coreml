@@ -30,7 +30,7 @@ pip3 install git+https://github.com/digitalbrain79/transformers_coreml.git
 pip3 install git+https://github.com/digitalbrain79/diffusers_coreml.git
 ```
 
-## Example
+## Examples
 ### Text to Image
 
 ```py
@@ -144,8 +144,11 @@ image = load_image(
     "https://huggingface.co/datasets/patrickvonplaten/images/resolve/main/aa_xl/000000009.png"
 )
 
+# Download manually "https://huggingface.co/digitalbrain79/mistoline_coreml_6bits_compiled"
+controlnet_path = "" # Downloaded path
+
 controlnet = ControlNetModel.from_pretrained(
-    "digitalbrain79/mistoline_coreml_6bits_compiled",
+    controlnet_path,
     use_safetensors=False,
     low_cpu_mem_usage=False
 )
