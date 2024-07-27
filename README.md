@@ -40,7 +40,7 @@ from diffusers import (
 )
 
 pipeline = StableDiffusionXLPipeline.from_pretrained(
-    "digitalbrain79/sdxl_lightning_4step_coreml_6bits_compiled",
+    "digitalbrain79/sdxl-lightning-4step-coreml-6bits-compiled",
     use_safetensors=False,
     low_cpu_mem_usage=False
 )
@@ -68,7 +68,7 @@ from diffusers import (
 from diffusers.utils import load_image
 
 pipeline = StableDiffusionXLImg2ImgPipeline.from_pretrained(
-    "digitalbrain79/sdxl_lightning_4step_coreml_6bits_compiled",
+    "digitalbrain79/sdxl-lightning-4step-coreml-6bits-compiled",
     use_safetensors=False,
     low_cpu_mem_usage=False
 )
@@ -100,7 +100,7 @@ from diffusers import (
 from diffusers.utils import load_image
 
 pipeline = StableDiffusionXLInpaintPipeline.from_pretrained(
-    "digitalbrain79/sdxl_lightning_4step_coreml_6bits_compiled",
+    "digitalbrain79/sdxl-lightning-4step-coreml-6bits-compiled",
     use_safetensors=False,
     low_cpu_mem_usage=False
 )
@@ -144,7 +144,7 @@ image = load_image(
     "https://huggingface.co/datasets/patrickvonplaten/images/resolve/main/aa_xl/000000009.png"
 )
 
-# Download manually "https://huggingface.co/digitalbrain79/mistoline_coreml_6bits_compiled"
+# Download manually "https://huggingface.co/digitalbrain79/mistoline-coreml-6bits-compiled"
 controlnet_path = "" # Downloaded path
 
 controlnet = ControlNetModel.from_pretrained(
@@ -154,7 +154,7 @@ controlnet = ControlNetModel.from_pretrained(
 )
 
 pipeline = StableDiffusionXLControlNetPipeline.from_pretrained(
-    "digitalbrain79/sdxl_lightning_4step_controlnet_coreml_6bits_compiled",
+    "digitalbrain79/sdxl-lightning-4step-controlnet-coreml-6bits-compiled",
     use_safetensors=False,
     low_cpu_mem_usage=False,
     controlnet=controlnet
