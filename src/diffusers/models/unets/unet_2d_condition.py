@@ -1099,12 +1099,19 @@ class UNet2DConditionModel(
             encoder_hidden_states = np.expand_dims(encoder_hidden_states.permute((0, 2, 1)), axis=2)
             kwargs = {
                 "sample": sample.numpy(),
-                "timestep": np.array([timestep.numpy()]),
+                "timestep": np.array([timestep]),
                 "encoder_hidden_states": encoder_hidden_states,
                 "text_embeds": added_cond_kwargs["text_embeds"].numpy(),
                 "time_ids": added_cond_kwargs["time_ids"].numpy()
             }
 
+            additional_residuals = {}
+            if down_block_additional_residuals is not None and mid_block_additional_residual is not None:
+                for i, additional_residual in enumerate(down_block_additional_residuals):
+                    additional_residuals[f"additional_residual_{i}"] = additional_residual.numpy()
+                additional_residuals["additional_residual_9"] = mid_block_additional_residual.numpy()
+                kwargs.update(additional_residuals)
+            
             sample = torch.from_numpy(self._state_dict.predict(kwargs)["noise_pred"])
             if not return_dict:
                 return (sample,)

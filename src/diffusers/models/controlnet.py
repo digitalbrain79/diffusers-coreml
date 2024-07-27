@@ -17,6 +17,7 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 import torch
 from torch import nn
 from torch.nn import functional as F
+import numpy as np
 
 from ..configuration_utils import ConfigMixin, register_to_config
 from ..loaders.single_file_model import FromOriginalModelMixin
@@ -717,6 +718,31 @@ class ControlNetModel(ModelMixin, ConfigMixin, FromOriginalModelMixin):
                 If `return_dict` is `True`, a [`~models.controlnet.ControlNetOutput`] is returned, otherwise a tuple is
                 returned where the first element is the sample tensor.
         """
+        if hasattr(self, "_coreml_type"):
+            kwargs = {
+                "sample": sample.numpy(),
+                "timestep": np.array([timestep]),
+                "encoder_hidden_states": encoder_hidden_states.numpy(),
+                "controlnet_cond": controlnet_cond.numpy(),
+                "conditioning_scale": np.array([conditioning_scale]),
+                "text_embeds": added_cond_kwargs["text_embeds"].numpy(),
+                "time_ids": added_cond_kwargs["time_ids"].numpy()
+            }
+
+            result = self._state_dict.predict(kwargs)
+            down_block_res_samples = []
+            mid_block_res_sample = torch.from_numpy(result["additional_residual_9"])
+            for i in range(9):
+                down_block_res_samples.append(torch.from_numpy(result[f"additional_residual_{i}"]))
+            down_block_res_samples = tuple(down_block_res_samples)
+
+            if not return_dict:
+                return (down_block_res_samples, mid_block_res_sample)
+
+            return ControlNetOutput(
+                down_block_res_samples=down_block_res_samples, mid_block_res_sample=mid_block_res_sample
+            )
+
         # check channel order
         channel_order = self.config.controlnet_conditioning_channel_order
 
