@@ -126,3 +126,54 @@ image = pipeline(
 ```
 
 <img src="assets/inpainting.png" width="384">
+
+### ControlNet
+
+```py
+import numpy as np
+import cv2
+from PIL import Image
+from diffusers import (
+    EulerAncestralDiscreteScheduler,
+    StableDiffusionXLControlNetPipeline,
+    ControlNetModel
+)
+from diffusers.utils import load_image
+
+image = load_image(
+    "https://huggingface.co/datasets/patrickvonplaten/images/resolve/main/aa_xl/000000009.png"
+)
+
+controlnet = ControlNetModel.from_pretrained(
+    "digitalbrain79/mistoline_coreml_6bits_compiled",
+    use_safetensors=False,
+    low_cpu_mem_usage=False
+)
+
+pipeline = StableDiffusionXLControlNetPipeline.from_pretrained(
+    "digitalbrain79/sdxl_lightning_4step_controlnet_coreml_6bits_compiled",
+    use_safetensors=False,
+    low_cpu_mem_usage=False,
+    controlnet=controlnet
+)
+
+pipeline.scheduler = EulerAncestralDiscreteScheduler.from_config(
+    pipeline.scheduler.config, timestep_spacing="trailing"
+)
+
+image = np.array(image)
+image = cv2.Canny(image, 100, 200)
+image = image[:, :, None]
+image = np.concatenate([image, image, image], axis=2)
+canny_image = Image.fromarray(image)
+
+image = pipeline(
+prompt="a photo of an astronaut riding a horse on mars",
+    controlnet_conditioning_scale=0.5,
+    image=canny_image,
+    num_inference_steps=4,
+    guidance_scale=0
+).images[0]
+```
+
+<img src="assets/canny.png" width="384"/> <img src="assets/controlnet_canny.png" width="384"/> 
