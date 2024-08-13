@@ -31,6 +31,7 @@ pip3 install git+https://github.com/digitalbrain79/diffusers-coreml.git
 ```
 
 ## Examples
+Only supports 1024x1024 resolution
 ### Text to Image
 
 ```py
