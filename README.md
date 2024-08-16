@@ -129,7 +129,7 @@ image = pipeline(
 <img src="assets/inpainting.png" width="384">
 
 ### ControlNet
-
+#### MistoLine
 ```py
 import numpy as np
 import cv2
@@ -182,8 +182,111 @@ prompt="a photo of an astronaut riding a horse on mars",
 
 <img src="assets/canny.png" width="384"/> <img src="assets/controlnet_canny.png" width="384"/> 
 
+#### OpenPose
+```py
+from diffusers import (
+    EulerAncestralDiscreteScheduler,
+    StableDiffusionXLControlNetPipeline,
+    ControlNetModel
+)
+from diffusers.utils import load_image
+from controlnet_aux import OpenposeDetector
+
+# Download manually "https://huggingface.co/digitalbrain79/controlnet-openpose-coreml-6bits-compiled"
+controlnet_path = "" # Downloaded path
+
+controlnet = ControlNetModel.from_pretrained(
+    controlnet_path,
+    use_safetensors=False,
+    low_cpu_mem_usage=False
+)
+openpose = OpenposeDetector.from_pretrained("lllyasviel/ControlNet")
+
+image = load_image(
+    "https://huggingface.co/datasets/huggingface/documentation-images/resolve/main/diffusers/person.png"
+)
+openpose_image = openpose(image).resize((1024, 1024))
+
+pipeline = StableDiffusionXLControlNetPipeline.from_pretrained(
+    "digitalbrain79/sdxl-lightning-4step-controlnet-coreml-6bits-compiled",
+    use_safetensors=False,
+    low_cpu_mem_usage=False,
+    controlnet=controlnet
+)
+pipeline.scheduler = EulerAncestralDiscreteScheduler.from_config(
+    pipeline.scheduler.config, timestep_spacing="trailing"
+)
+
+image = pipeline(
+    prompt="Darth vader dancing in a desert, high quality",
+    negative_prompt="low quality, bad quality",
+    image=openpose_image,
+    num_inference_steps=4,
+    guidance_scale=0
+).images[0]
+```
+
+<img src="assets/openpose.png" width="384"/> <img src="assets/controlnet_openpose.png" width="384"/>
+
+#### Depth
+```py
+import numpy as np
+import cv2
+from PIL import Image
+from diffusers import (
+    EulerAncestralDiscreteScheduler,
+    StableDiffusionXLControlNetPipeline,
+    ControlNetModel
+)
+from diffusers.utils import load_image
+from controlnet_aux import MidasDetector
+
+# Download manually "https://huggingface.co/digitalbrain79/controlnet-depth-coreml-6bits-compiled"
+controlnet_path = "" # Downloaded path
+
+controlnet = ControlNetModel.from_pretrained(
+    controlnet_path,
+    use_safetensors=False,
+    low_cpu_mem_usage=False
+)
+processor_midas = MidasDetector.from_pretrained("lllyasviel/Annotators")
+
+image = load_image(
+    "https://huggingface.co/lllyasviel/sd-controlnet-depth/resolve/main/images/stormtrooper.png"
+)
+
+depth_image = processor_midas(image, output_type='cv2')
+height, width, _ = depth_image.shape
+ratio = np.sqrt(1024. * 1024. / (width * height))
+new_width, new_height = int(width * ratio), int(height * ratio)
+depth_image = cv2.resize(depth_image, (new_width, new_height))
+depth_image = Image.fromarray(depth_image)
+
+pipeline = StableDiffusionXLControlNetPipeline.from_pretrained(
+    "digitalbrain79/sdxl-lightning-4step-controlnet-coreml-6bits-compiled",
+    use_safetensors=False,
+    low_cpu_mem_usage=False,
+    controlnet=controlnet
+)
+pipeline.scheduler = EulerAncestralDiscreteScheduler.from_config(
+    pipeline.scheduler.config, timestep_spacing="trailing"
+)
+
+image = pipeline(
+    prompt="stormtrooper lecture, photorealistic",
+    image=depth_image,
+    num_inference_steps=4,
+    guidance_scale=0,
+    controlnet_conditioning_scale=0.5
+).images[0]
+```
+
+<img src="assets/depth.png" width="384"/> <img src="assets/controlnet_depth.png" width="384"/>
+
 ## References
 
 https://github.com/apple/ml-stable-diffusion<br/>
 https://huggingface.co/ByteDance/SDXL-Lightning<br/>
-https://huggingface.co/TheMistoAI/MistoLine
+https://huggingface.co/TheMistoAI/MistoLine<br/>
+https://huggingface.co/thibaud/controlnet-openpose-sdxl-1.0<br/>
+https://huggingface.co/diffusers/controlnet-depth-sdxl-1.0
