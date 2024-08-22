@@ -40,6 +40,8 @@ from diffusers import (
     StableDiffusionXLPipeline
 )
 
+# Dreamshaper XL: digitalbrain79/dreamshaper-xl-lightning-4step-coreml-6bits-compiled
+# Juggernaut XL: digitalbrain79/juggernaut-xl-lightning-4step-coreml-6bits-compiled
 pipeline = StableDiffusionXLPipeline.from_pretrained(
     "digitalbrain79/sdxl-lightning-4step-coreml-6bits-compiled",
     use_safetensors=False,
