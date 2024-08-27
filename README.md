@@ -70,6 +70,8 @@ from diffusers import (
 )
 from diffusers.utils import load_image
 
+# Dreamshaper XL: digitalbrain79/dreamshaper-xl-lightning-4step-coreml-6bits-compiled
+# Juggernaut XL: digitalbrain79/juggernaut-xl-lightning-4step-coreml-6bits-compiled
 pipeline = StableDiffusionXLImg2ImgPipeline.from_pretrained(
     "digitalbrain79/sdxl-lightning-4step-coreml-6bits-compiled",
     use_safetensors=False,
@@ -102,6 +104,8 @@ from diffusers import (
 )
 from diffusers.utils import load_image
 
+# Dreamshaper XL: digitalbrain79/dreamshaper-xl-lightning-4step-coreml-6bits-compiled
+# Juggernaut XL: digitalbrain79/juggernaut-xl-lightning-4step-coreml-6bits-compiled
 pipeline = StableDiffusionXLInpaintPipeline.from_pretrained(
     "digitalbrain79/sdxl-lightning-4step-coreml-6bits-compiled",
     use_safetensors=False,
@@ -156,6 +160,8 @@ controlnet = ControlNetModel.from_pretrained(
     low_cpu_mem_usage=False
 )
 
+# Dreamshaper XL: digitalbrain79/dreamshaper-xl-lightning-4step-controlnet-coreml-6bits-compiled
+# Juggernaut XL: digitalbrain79/juggernaut-xl-lightning-4step-controlnet-coreml-6bits-compiled
 pipeline = StableDiffusionXLControlNetPipeline.from_pretrained(
     "digitalbrain79/sdxl-lightning-4step-controlnet-coreml-6bits-compiled",
     use_safetensors=False,
@@ -209,6 +215,8 @@ image = load_image(
 )
 openpose_image = openpose(image).resize((1024, 1024))
 
+# Dreamshaper XL: digitalbrain79/dreamshaper-xl-lightning-4step-controlnet-coreml-6bits-compiled
+# Juggernaut XL: digitalbrain79/juggernaut-xl-lightning-4step-controlnet-coreml-6bits-compiled
 pipeline = StableDiffusionXLControlNetPipeline.from_pretrained(
     "digitalbrain79/sdxl-lightning-4step-controlnet-coreml-6bits-compiled",
     use_safetensors=False,
@@ -264,6 +272,8 @@ new_width, new_height = int(width * ratio), int(height * ratio)
 depth_image = cv2.resize(depth_image, (new_width, new_height))
 depth_image = Image.fromarray(depth_image)
 
+# Dreamshaper XL: digitalbrain79/dreamshaper-xl-lightning-4step-controlnet-coreml-6bits-compiled
+# Juggernaut XL: digitalbrain79/juggernaut-xl-lightning-4step-controlnet-coreml-6bits-compiled
 pipeline = StableDiffusionXLControlNetPipeline.from_pretrained(
     "digitalbrain79/sdxl-lightning-4step-controlnet-coreml-6bits-compiled",
     use_safetensors=False,
